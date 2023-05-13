@@ -1,8 +1,16 @@
-function Note({ note, onCheckboxChange }) {
+function Note({ note, onCheckboxChange, onDelete, onUpdate }) {
   const { text, _id, checked } = note;
 
   const handleCheckboxChange = () => {
     onCheckboxChange(_id);
+  };
+
+  const handleDelete = () => {
+    onDelete(_id);
+  };
+
+  const handleUpdate = () => {
+    onUpdate(_id);
   };
 
   return (
@@ -11,6 +19,12 @@ function Note({ note, onCheckboxChange }) {
         <input type="checkbox" id={_id} onChange={handleCheckboxChange} />
         <span className={checked ? 'checked' : ''}>{text}</span>
       </label>
+      <button type="button" onClick={handleDelete}>
+        Delete
+      </button>
+      <button type="button" onClick={handleUpdate}>
+        Edit
+      </button>
     </div>
   );
 }
