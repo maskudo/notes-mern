@@ -1,58 +1,112 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import Note from './componenets/Note';
+import {
+  addNoteRoute,
+  allNotesRoute,
+  deleteNoteByIdRoute,
+  updateNoteByIdRoute,
+} from './utils/ApiRoutes';
 
 function App() {
   const [notes, setNotes] = useState([]);
-  const [id, setId] = useState(0);
   const [currentEditingNote, setCurrentEditingNote] = useState(undefined);
   const [currentMode, setCurrentMode] = useState('add');
   const inputRef = useRef(undefined);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (currentMode === 'add') {
-      const note = { text: inputRef.current.value, _id: id, checked: false };
-      setNotes([...notes, note]);
-      inputRef.current.value = '';
-      setId(id + 1);
-    } else if (currentMode === 'edit') {
-      const note = {
-        text: inputRef.current.value,
-        _id: currentEditingNote,
-        checked: false,
-      };
-      const updatedNotes = notes.map((prevNote) => {
-        if (prevNote._id === currentEditingNote) {
-          return note;
+  useEffect(() => {
+    async function fn() {
+      const { data } = await axios.get(allNotesRoute);
+      if (data.status === false) {
+        console.log('failed fetching all notes');
+        return;
+      }
+      setNotes(data.data);
+    }
+    fn();
+  });
+
+  const handleNoteUpdate = async (updatedNote) => {
+    try {
+      const data = await axios.put(
+        `${updateNoteByIdRoute}/${updatedNote._id}`,
+        updatedNote,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-        return prevNote;
+      );
+      if (data.status === false) {
+        console.log('failed updating note');
+        return;
+      }
+      const updatedNotes = notes.map((note) => {
+        if (note._id === data.data._id) {
+          return data.data;
+        }
+        return data;
       });
       setNotes(updatedNotes);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (currentMode === 'add') {
+      const note = { text: inputRef.current.value, checked: false };
+      const { data } = await axios.post(addNoteRoute, note, {
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+      if (data.status === false) {
+        console.log('failed note creation');
+        return;
+      }
+      setNotes([...notes, data.data]);
+      inputRef.current.value = '';
+    } else if (currentMode === 'edit') {
+      const note = {
+        ...notes.find((aNote) => aNote._id === currentEditingNote),
+        text: inputRef.current.value,
+        checked: false,
+      };
+      handleNoteUpdate(note);
       inputRef.current.value = '';
       setCurrentMode('add');
     }
   };
 
   const handleCheckboxChange = (noteId) => {
-    const updatedNotes = notes.map((note) => {
-      if (note._id === noteId) {
-        return { ...note, checked: !note.checked };
-      }
-      return note;
-    });
-    setNotes(updatedNotes);
+    const oldNote = notes.find((aNote) => aNote._id === noteId);
+    const note = {
+      ...oldNote,
+      checked: !oldNote.checked,
+    };
+    handleNoteUpdate(note);
   };
 
-  const handleDelete = (noteId) => {
-    const updatedNotes = notes.filter((note) => note._id !== noteId);
-    setNotes(updatedNotes);
+  const handleDelete = async (noteId) => {
+    try {
+      const data = await axios.delete(`${deleteNoteByIdRoute}/${noteId}`);
+      if (!data.status) {
+        console.log('Deleting Note failed');
+      }
+      const updatedNotes = notes.filter((note) => note._id !== noteId);
+      setNotes(updatedNotes);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleUpdate = (noteId) => {
     inputRef.current.value = notes.find((note) => note._id === noteId).text;
     inputRef.current.focus();
     setCurrentMode('edit');
-    setCurrentEditingNote((_) => noteId);
+    setCurrentEditingNote(noteId);
   };
 
   return (
