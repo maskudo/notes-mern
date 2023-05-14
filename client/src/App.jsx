@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Note from './componenets/Note';
 import {
   addNoteRoute,
@@ -9,6 +11,13 @@ import {
   deleteNoteByIdRoute,
   updateNoteByIdRoute,
 } from './utils/ApiRoutes';
+import toastOptions from './utils/ToastOptions';
+import {
+  toastCreatingError,
+  toastDeletingError,
+  toastFetchingError,
+  toastUpdatingError,
+} from './utils/ToastErrors';
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -18,13 +27,20 @@ function App() {
 
   useEffect(() => {
     async function getAllNotes() {
-      const { data } = await axios.get(allNotesRoute);
-      if (data.status === false) {
-        console.log('failed fetching all notes');
-        return;
+      let result = [];
+      try {
+        const { data } = await axios.get(allNotesRoute);
+        if (data.status === false) {
+          toastFetchingError();
+          return;
+        }
+        result = data.data;
+      } catch (e) {
+        toastFetchingError();
       }
-      setNotes(data.data);
+      setNotes(result);
     }
+
     getAllNotes();
   }, []);
 
@@ -40,7 +56,7 @@ function App() {
         }
       );
       if (data.status === false) {
-        console.log('failed updating note');
+        toastUpdatingError();
         return;
       }
       const updatedNotes = notes.map((note) => {
@@ -51,7 +67,7 @@ function App() {
       });
       setNotes(updatedNotes);
     } catch (error) {
-      console.log(error);
+      toastUpdatingError();
     }
   };
 
@@ -65,7 +81,7 @@ function App() {
         },
       });
       if (data.status === false) {
-        console.log('failed note creation');
+        toastCreatingError();
         return;
       }
       setNotes([...notes, data.data]);
@@ -95,12 +111,13 @@ function App() {
     try {
       const data = await axios.delete(`${deleteNoteByIdRoute}/${noteId}`);
       if (!data.status) {
-        console.log('Deleting Note failed');
+        toastDeletingError();
       }
       const updatedNotes = notes.filter((note) => note._id !== noteId);
       setNotes(updatedNotes);
     } catch (error) {
-      console.log(error);
+      toastDeletingError();
+      // console.log(error);
     }
   };
 
@@ -146,6 +163,7 @@ function App() {
             />
           ))}
       </div>
+      <ToastContainer />
     </div>
   );
 }
