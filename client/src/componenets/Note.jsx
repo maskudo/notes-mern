@@ -1,6 +1,12 @@
+import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { format, parseISO } from 'date-fns';
+
 function Note({ note, onCheckboxChange, onDelete, onUpdate }) {
   const { text, _id, checked, createdAt } = note;
 
+  const dateObj = parseISO(createdAt);
+  const formattedDate = format(dateObj, 'MMMM do');
   const handleCheckboxChange = () => {
     onCheckboxChange(_id);
   };
@@ -14,22 +20,31 @@ function Note({ note, onCheckboxChange, onDelete, onUpdate }) {
   };
 
   return (
-    <div className="note">
-      <label htmlFor={_id}>
-        <input
-          type="checkbox"
-          id={_id}
-          checked={checked}
-          onChange={handleCheckboxChange}
-        />
-        <span className={checked ? 'checked' : ''}>{text}</span>
+    <div className={`${checked ? 'checked' : ''} note h-10 flex `}>
+      <label htmlFor={_id} className=" flex w-full">
+        <div className="checkbox flex justify-center align-middle mx-2">
+          <input
+            type="checkbox"
+            id={_id}
+            checked={checked}
+            onChange={handleCheckboxChange}
+          />
+        </div>
+        <div className={`${checked ? 'line-through' : ''} w-full px-2 my-auto`}>
+          <span>{text}</span>
+        </div>
       </label>
-      <button type="button" onClick={handleDelete}>
-        Delete
-      </button>
-      <button type="button" onClick={handleUpdate}>
-        Edit
-      </button>
+      <div className="right flex mx-2">
+        <div className="text-xs my-auto">
+          <span>{formattedDate}</span>
+        </div>
+        <button type="button" className="mx-2" onClick={handleDelete}>
+          <FontAwesomeIcon icon={faTrash} />
+        </button>
+        <button type="button" className="mx-2" onClick={handleUpdate}>
+          <FontAwesomeIcon icon={faPenToSquare} />
+        </button>
+      </div>
     </div>
   );
 }

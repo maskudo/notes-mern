@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+import { faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Note from './componenets/Note';
 import {
   addNoteRoute,
@@ -11,11 +13,11 @@ import {
 function App() {
   const [notes, setNotes] = useState([]);
   const [currentEditingNote, setCurrentEditingNote] = useState(undefined);
-  const [currentMode, setCurrentMode] = useState('add');
+  const [currentMode, setCurrentMode] = useState('create');
   const inputRef = useRef(undefined);
 
   useEffect(() => {
-    async function fn() {
+    async function getAllNotes() {
       const { data } = await axios.get(allNotesRoute);
       if (data.status === false) {
         console.log('failed fetching all notes');
@@ -23,8 +25,8 @@ function App() {
       }
       setNotes(data.data);
     }
-    fn();
-  });
+    getAllNotes();
+  }, []);
 
   const handleNoteUpdate = async (updatedNote) => {
     try {
@@ -45,7 +47,7 @@ function App() {
         if (note._id === data.data._id) {
           return data.data;
         }
-        return data;
+        return note;
       });
       setNotes(updatedNotes);
     } catch (error) {
@@ -55,7 +57,7 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (currentMode === 'add') {
+    if (currentMode === 'create') {
       const note = { text: inputRef.current.value, checked: false };
       const { data } = await axios.post(addNoteRoute, note, {
         headers: {
@@ -76,7 +78,7 @@ function App() {
       };
       handleNoteUpdate(note);
       inputRef.current.value = '';
-      setCurrentMode('add');
+      setCurrentMode('create');
     }
   };
 
@@ -111,19 +113,28 @@ function App() {
 
   return (
     <div className="app">
-      <form onSubmit={(e) => handleSubmit(e)}>
-        <label htmlFor="addNote">
-          <input
-            ref={inputRef}
-            type="text"
-            id="addNote"
-            placeholder="Add note"
-          />
-        </label>
-        <button type="submit">{currentMode.toUpperCase()}</button>
+      <header className="px-32 py-4 text-white font-mono">
+        <h1 className="text-3xl">Notes</h1>
+      </header>
+      <form
+        onSubmit={(e) => handleSubmit(e)}
+        className="flex items-center py-4 px-32  gap-2"
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          id="createNote"
+          className="basis-3/4 p-2"
+          required
+          placeholder="Write something..."
+        />
+        <button type="submit" className="basis-1/12 create-edit-button">
+          {currentMode === 'create' && <FontAwesomeIcon icon={faPlus} />}
+          {currentMode === 'edit' && <FontAwesomeIcon icon={faPenToSquare} />}
+        </button>
       </form>
 
-      <div className="notes">
+      <div className="notes flex flex-col justify-center align-middle gap-4 py-4 px-32 ">
         {!!notes.length &&
           notes.map((note) => (
             <Note

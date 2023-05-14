@@ -1,3 +1,37 @@
+* {
+  /* outline: 1px dotted #000000; */
+}
+header {
+  background: #663645;
+}
+
+.right {
+  color: #663645;
+}
+.create-edit-button {
+  color: #663645;
+}
+
+input[type='checkbox'] {
+  accent-color: #663645;
+}
+
+input[type='text'] {
+  /* background: #eeeeee; */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+input[type='text']:focus {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  accent-color: #663645;
+}
+
+.note {
+  background: #eeeeee;
+  border-left: solid 2px #663645;
+}
+.checked {
+  opacity: 0.5;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
